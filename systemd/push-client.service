@@ -1,0 +1,25 @@
+# Reference unit for the push client. The ansible role installs its own
+# copy and may extend the hardening.
+
+[Unit]
+Description=push status client: sends this host's status to the push service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/push-client run --config /etc/push-client/conf
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+
+# Runs as root by default: the config holds the raw token and the cache
+# dir is root-owned. A dedicated User=push-client works too, with the
+# config, status files and cache dir owned by it.
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
